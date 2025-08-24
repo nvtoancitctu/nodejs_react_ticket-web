@@ -1,0 +1,150 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role { 
+  CUSTOMER
+  ORGANIZER 
+  ADMIN 
+  }
+enum EventStatus { 
+  DRAFT 
+  PUBLISHED 
+  CLOSED 
+  }
+enum OrderStatus { 
+  PENDING 
+  PAID 
+  CANCELED 
+  }
+enum TicketStatus { 
+  VALID 
+  USED 
+  REFUNDED 
+}
+
+model User {
+  id            Int      @id @default(autoincrement())
+  name          String
+  email         String   @unique
+  passwordHash  String
+  role          Role     @default(CUSTOMER)
+  createdAt     DateTime @default(now())
+  organizerProfile OrganizerProfile?
+  events        Event[]  @relation("OrganizerEvents")
+  orders        Order[]
+  auditLogs     AuditLog[]
+}
+
+model OrganizerProfile {
+  id         Int   @id @default(autoincrement())
+  user       User  @relation(fields: [userId], references: [id])
+  userId     Int   @unique
+  companyName String
+  taxCode     String?
+  verified    Boolean @default(false)
+}
+
+model Event {
+  id          Int       @id @default(autoincrement())
+  organizer   User      @relation("OrganizerEvents", fields: [organizerId], references: [id])
+  organizerId Int
+  name        String
+  category    String?
+  description String?
+  venue       String
+  city        String
+  startTime   DateTime
+  endTime     DateTime
+  status      EventStatus @default(DRAFT)
+  coverImage  String?
+  ticketTypes TicketType[]
+  orders      Order[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model TicketType {
+  id        Int    @id @default(autoincrement())
+  event     Event  @relation(fields: [eventId], references: [id])
+  eventId   Int
+  name      String
+  price     Decimal @db.Decimal(10,2)
+  quantity  Int
+  sold      Int     @default(0)
+  isSeatMap Boolean @default(false)
+  orderItems OrderItem[]
+}
+
+model Order {
+  id          Int       @id @default(autoincrement())
+  user        User      @relation(fields: [userId], references: [id])
+  userId      Int
+  event       Event     @relation(fields: [eventId], references: [id])
+  eventId     Int
+  status      OrderStatus @default(PENDING)
+  total       Decimal    @db.Decimal(10,2)
+  paymentMethod String?
+  items       OrderItem[]
+  payment     Payment?
+  tickets     Ticket[]   @relation("OrderTickets")
+  createdAt   DateTime @default(now())
+}
+
+model OrderItem {
+  id          Int        @id @default(autoincrement())
+  order       Order      @relation(fields: [orderId], references: [id])
+  orderId     Int
+  ticketType  TicketType @relation(fields: [ticketTypeId], references: [id])
+  ticketTypeId Int
+  qty         Int
+  unitPrice   Decimal    @db.Decimal(10,2)
+  tickets     Ticket[]
+}
+
+model Ticket {
+  id         Int      @id @default(autoincrement())
+  orderItem  OrderItem @relation(fields: [orderItemId], references: [id])
+  orderItemId Int
+  order      Order?    @relation("OrderTickets", fields: [orderId], references: [id])
+  orderId    Int?
+  code       String   @unique
+  qrcodeUrl  String?
+  status     TicketStatus @default(VALID)
+  holderName String?
+  holderEmail String?
+  usedAt     DateTime?
+}
+
+model Payment {
+  id        Int       @id @default(autoincrement())
+  order     Order     @relation(fields: [orderId], references: [id])
+  orderId   Int       @unique
+  amount    Decimal   @db.Decimal(10,2)
+  provider  String
+  status    String
+  txnId     String?
+  createdAt DateTime  @default(now())
+}
+
+model AuditLog {
+  id        Int      @id @default(autoincrement())
+  user      User?    @relation(fields: [userId], references: [id])
+  userId    Int?
+  action    String
+  entity    String
+  entityId  Int?
+  createdAt DateTime @default(now())
+}
