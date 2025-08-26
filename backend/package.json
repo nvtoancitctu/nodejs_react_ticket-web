@@ -14,6 +14,7 @@
     "express": "^5.1.0",
     "jsonwebtoken": "^9.0.2",
     "prisma": "^6.14.0",
+    "react-icons": "^5.5.0",
     "zod": "^4.1.1"
   },
   "devDependencies": {
@@ -22,7 +23,10 @@
     "@types/express": "^5.0.3",
     "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^24.3.0",
+    "autoprefixer": "^10.4.21",
     "nodemon": "^3.1.10",
+    "postcss": "^8.5.6",
+    "tailwindcss": "^4.1.12",
     "ts-node": "^10.9.2",
     "tsx": "^4.20.5",
     "typescript": "^5.9.2"
@@ -31,7 +35,7 @@
     "seed": "tsx prisma/seed.ts"
   },
   "scripts": {
-    "dev": "nodemon --loader ts-node/esm src/index.ts",
+    "dev": "nodemon --exec tsx src/index.ts",
     "build": "tsc",
     "start": "node dist/index.js",
     "seed": "tsx prisma/seed.ts"

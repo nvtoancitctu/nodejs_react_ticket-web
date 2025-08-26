@@ -6,16 +6,17 @@ const r = Router();
 
 // Public: list/search
 r.get("/current", async (req, res) => {
-  const now = new Date();
   const events = await prisma.event.findMany({
-    where: {
-      status: "PUBLISHED",
-      startTime: { lte: now },
-      endTime: { gte: now },
-    },
-    orderBy: { startTime: "asc" },
-    include: { ticketTypes: true },
-  });
+      where: {
+        status: "PUBLISHED",
+        endTime: { gte: new Date() }, // sự kiện chưa kết thúc
+      },
+      orderBy: { startTime: "asc" },
+      include: {
+        ticketTypes: true,
+        organizer: { select: { name: true } },
+      },
+    });
   res.json(events);
 });
 
