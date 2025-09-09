@@ -63,11 +63,11 @@ export default function Home() {
 
               <div className="grid grid-cols-[auto_1fr] gap-2 text-sm text-gray-600">
                 {/* Thời gian */}
-                <Calendar className="w-4 h-4 text-gray-500 mt-1" />
+                <Calendar className="text-gray-500" size={18} />
                 <p className="font-bold text-green-600">{formatTimeRangeUTC(e.startTime, e.endTime)}</p>
 
                 {/* Địa điểm */}
-                <MapPin className="w-4 h-4 text-gray-500 mt-1" />
+                <MapPin className="text-gray-500" size={18} />
                 <div>
                   <p className="font-bold text-green-600">{e.venue}</p>
                   <p className="text-gray-500">{e.city}</p>
